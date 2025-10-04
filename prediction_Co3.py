@@ -22,13 +22,14 @@ if uploaded_file is not None:
     st.dataframe(df.head())
 
     # ===== Chuẩn bị dữ liệu =====
-    features = ["Protein", "Salt", "Cacium"]
+    features = ["Protein", "Salt", "Cacium"]  # đổi theo cột thực tế
     target = "ion_CO3"
 
     if all(f in df.columns for f in features + [target]):
         X = df[features].values
         y = df[target].values
 
+        # Tách train/test
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
@@ -43,7 +44,7 @@ if uploaded_file is not None:
             "RandomForest": RandomForestRegressor(n_estimators=100, random_state=42)
         }
 
-        # Train và đánh giá
+        # Huấn luyện và đánh giá mô hình
         results = []
         for name, model in models.items():
             model.fit(X_train, y_train)
@@ -60,7 +61,7 @@ if uploaded_file is not None:
 
         results_df = pd.DataFrame(results)
 
-        # ===== Giao diện Streamlit =====
+        # ===== Giao diện dự đoán =====
         st.subheader("Chọn mô hình dự đoán")
         model_choice = st.selectbox("Mô hình", results_df["Model"].tolist())
 
