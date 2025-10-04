@@ -14,7 +14,6 @@ st.title("Ứng dụng dự đoán CO3")
 # ===========================
 uploaded_file = st.file_uploader("📂 Chọn file Excel", type=["xlsx"])
 
-# ===== Chỉ chạy nếu có file =====
 if uploaded_file is not None:
     # Đọc dữ liệu
     df = pd.read_excel(uploaded_file)
@@ -34,7 +33,7 @@ if uploaded_file is not None:
             X, y, test_size=0.2, random_state=42
         )
 
-        # Tạo mô hình
+        # Tạo các mô hình
         models = {
             "Linear": LinearRegression(),
             "Linear + StandardScaler": make_pipeline(StandardScaler(), LinearRegression()),
