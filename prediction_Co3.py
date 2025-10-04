@@ -8,20 +8,15 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error
 
 # ===========================
-import os
-import pandas as pd
 import streamlit as st
+import pandas as pd
 
-# Nếu file Data.xlsx tồn tại cục bộ (máy tính bạn)
-if os.path.exists("Data.xlsx"):
-    df = pd.read_excel("Data.xlsx")
+uploaded_file = st.file_uploader("Chọn file Excel", type=["xlsx"])
+if uploaded_file is not None:
+    df = pd.read_excel(uploaded_file)   # Không cần copy path
+    st.write(df.head())
 else:
-    # Nếu deploy trên Streamlit Cloud thì yêu cầu upload file
-    uploaded_file = st.file_uploader("Upload Excel file", type=["xlsx"])
-    if uploaded_file is not None:
-        df = pd.read_excel(uploaded_file)
-    else:
-        st.stop()  # dừng app cho đến khi upload xong
+    st.warning("Bạn chưa upload file Excel")
 
 # 1. Chuẩn bị dữ liệu và mô hình
 # ===========================
