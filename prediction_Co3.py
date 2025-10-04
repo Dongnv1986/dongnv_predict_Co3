@@ -10,7 +10,7 @@ from sklearn.metrics import r2_score, mean_squared_error
 st.title("Ứng dụng dự đoán CO3")
 
 # ===========================
-# 1. Upload file
+# 1. Upload file Excel
 # ===========================
 uploaded_file = st.file_uploader("📂 Chọn file Excel", type=["xlsx"])
 
@@ -18,16 +18,16 @@ if uploaded_file is not None:
     # Đọc dữ liệu
     df = pd.read_excel(uploaded_file)
     st.write("📂 Dữ liệu đã tải lên:")
-    st.write(df.head())
+    st.dataframe(df.head())
 
     # ===========================
     # 2. Chuẩn bị dữ liệu
     # ===========================
-    features = ["Protein", "Salt", "Cacium"]   # đổi theo tên cột thật
+    features = ["Protein", "Salt", "Cacium"]  # đổi theo cột thực tế
     target = "ion_CO3"
 
-    # Kiểm tra cột có tồn tại không
-    if all(f in df.columns for f in features+[target]):
+    # Kiểm tra cột tồn tại
+    if all(f in df.columns for f in features + [target]):
         X = df[features].values
         y = df[target].values
 
@@ -51,12 +51,12 @@ if uploaded_file is not None:
         for name, model in models.items():
             model.fit(X_train, y_train)
             y_train_pred = model.predict(X_train)
-            y_test_pred  = model.predict(X_test)
+            y_test_pred = model.predict(X_test)
 
             r2_train = r2_score(y_train, y_train_pred)
-            r2_test  = r2_score(y_test, y_test_pred)
+            r2_test = r2_score(y_test, y_test_pred)
             mse_train = mean_squared_error(y_train, y_train_pred)
-            mse_test  = mean_squared_error(y_test, y_test_pred)
+            mse_test = mean_squared_error(y_test, y_test_pred)
 
             results.append({
                 "Model": name,
@@ -69,31 +69,27 @@ if uploaded_file is not None:
         results_df = pd.DataFrame(results)
 
         # ===========================
-        # 3. Giao diện Streamlit
+        # 3. Giao diện dự đoán
         # ===========================
         st.subheader("Chọn mô hình dự đoán")
         model_choice = st.selectbox("Mô hình", results_df["Model"].tolist())
 
         st.subheader("Nhập thông số đầu vào")
         protein = st.number_input("Protein", value=0.0)
-        salt    = st.number_input("Salt", value=0.0)
-        cacium  = st.number_input("Cacium", value=0.0)
+        salt = st.number_input("Salt", value=0.0)
+        cacium = st.number_input("Cacium", value=0.0)
 
-        # Khi nhấn nút dự đoán
         if st.button("Dự đoán"):
             X_new = pd.DataFrame([[protein, salt, cacium]], columns=features)
-
-            # Lấy mô hình đã train
             selected_model = models[model_choice]
             y_pred = selected_model.predict(X_new)[0]
-
             st.success(f"🔮 Dự đoán ion_CO3: {y_pred:.4f}")
 
-        # Hiển thị kết quả so sánh mô hình
+        # Hiển thị bảng đánh giá mô hình
         st.subheader("📊 Hiệu quả các mô hình trên train/test")
         st.dataframe(results_df)
     else:
-        st.error(f"⚠️ File Excel phải có các cột: {features+[target]}")
+        st.error(f"⚠️ File Excel phải có các cột: {features + [target]}")
 else:
     st.warning("👉 Vui lòng upload file Excel để tiếp tục")
 
