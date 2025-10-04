@@ -6,32 +6,25 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error
+import pickle
 
 st.title("Ứng dụng dự đoán CO3")
 
-# ===========================
-# 1. Upload file Excel
-# ===========================
 uploaded_file = st.file_uploader("📂 Chọn file Excel", type=["xlsx"])
 
 if uploaded_file is not None:
-    # Đọc dữ liệu
     df = pd.read_excel(uploaded_file)
     st.write("📂 Dữ liệu đã tải lên:")
     st.dataframe(df.head())
 
-    # ===== Chuẩn bị dữ liệu =====
-    features = ["Protein", "Salt", "Cacium"]  # đổi theo cột thực tế
+    features = ["Protein", "Salt", "Cacium"]
     target = "ion_CO3"
 
     if all(f in df.columns for f in features + [target]):
         X = df[features].values
         y = df[target].values
 
-        # Tách train/test
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42
-        )
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
         # Tạo các mô hình
         models = {
@@ -43,27 +36,30 @@ if uploaded_file is not None:
             "RandomForest": RandomForestRegressor(n_estimators=100, random_state=42)
         }
 
-        # Huấn luyện và đánh giá mô hình
+        # Huấn luyện và đánh giá, lưu model tốt nhất
         results = []
+        best_r2 = -float('inf')
+        best_model = None
         for name, model in models.items():
             model.fit(X_train, y_train)
-            y_train_pred = model.predict(X_train)
             y_test_pred = model.predict(X_test)
+            r2 = r2_score(y_test, y_test_pred)
 
             results.append({
                 "Model": name,
-                "R2_train": r2_score(y_train, y_train_pred),
-                "R2_test": r2_score(y_test, y_test_pred),
-                "MSE_train": mean_squared_error(y_train, y_train_pred),
+                "R2_train": r2_score(y_train, model.predict(X_train)),
+                "R2_test": r2,
+                "MSE_train": mean_squared_error(y_train, model.predict(X_train)),
                 "MSE_test": mean_squared_error(y_test, y_test_pred)
             })
 
+            if r2 > best_r2:
+                best_r2 = r2
+                best_model = model
+
         results_df = pd.DataFrame(results)
 
-        # ===== Giao diện dự đoán =====
-        st.subheader("Chọn mô hình dự đoán")
-        model_choice = st.selectbox("Mô hình", results_df["Model"].tolist())
-
+        # Giao diện dự đoán
         st.subheader("Nhập thông số đầu vào")
         protein = st.number_input("Protein", value=0.0)
         salt = st.number_input("Salt", value=0.0)
@@ -71,11 +67,9 @@ if uploaded_file is not None:
 
         if st.button("Dự đoán"):
             X_new = pd.DataFrame([[protein, salt, cacium]], columns=features)
-            selected_model = models[model_choice]
-            y_pred = selected_model.predict(X_new)[0]
+            y_pred = best_model.predict(X_new)[0]
             st.success(f"🔮 Dự đoán ion_CO3: {y_pred:.4f}")
 
-        # Hiển thị bảng đánh giá mô hình
         st.subheader("📊 Hiệu quả các mô hình trên train/test")
         st.dataframe(results_df)
 
