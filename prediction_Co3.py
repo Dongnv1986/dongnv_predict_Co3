@@ -14,29 +14,26 @@ st.title("Ứng dụng dự đoán CO3")
 # ===========================
 uploaded_file = st.file_uploader("📂 Chọn file Excel", type=["xlsx"])
 
+# ===== Chỉ chạy nếu có file =====
 if uploaded_file is not None:
     # Đọc dữ liệu
     df = pd.read_excel(uploaded_file)
     st.write("📂 Dữ liệu đã tải lên:")
     st.dataframe(df.head())
 
-    # ===========================
-    # 2. Chuẩn bị dữ liệu
-    # ===========================
-    features = ["Protein", "Salt", "Cacium"]  # đổi theo cột thực tế
+    # ===== Chuẩn bị dữ liệu =====
+    features = ["Protein", "Salt", "Cacium"]
     target = "ion_CO3"
 
-    # Kiểm tra cột tồn tại
     if all(f in df.columns for f in features + [target]):
         X = df[features].values
         y = df[target].values
 
-        # Tách train/test
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
 
-        # Tạo các mô hình
+        # Tạo mô hình
         models = {
             "Linear": LinearRegression(),
             "Linear + StandardScaler": make_pipeline(StandardScaler(), LinearRegression()),
@@ -46,31 +43,24 @@ if uploaded_file is not None:
             "RandomForest": RandomForestRegressor(n_estimators=100, random_state=42)
         }
 
-        # Huấn luyện và đánh giá
+        # Train và đánh giá
         results = []
         for name, model in models.items():
             model.fit(X_train, y_train)
             y_train_pred = model.predict(X_train)
             y_test_pred = model.predict(X_test)
 
-            r2_train = r2_score(y_train, y_train_pred)
-            r2_test = r2_score(y_test, y_test_pred)
-            mse_train = mean_squared_error(y_train, y_train_pred)
-            mse_test = mean_squared_error(y_test, y_test_pred)
-
             results.append({
                 "Model": name,
-                "R2_train": r2_train,
-                "R2_test": r2_test,
-                "MSE_train": mse_train,
-                "MSE_test": mse_test
+                "R2_train": r2_score(y_train, y_train_pred),
+                "R2_test": r2_score(y_test, y_test_pred),
+                "MSE_train": mean_squared_error(y_train, y_train_pred),
+                "MSE_test": mean_squared_error(y_test, y_test_pred)
             })
 
         results_df = pd.DataFrame(results)
 
-        # ===========================
-        # 3. Giao diện dự đoán
-        # ===========================
+        # ===== Giao diện Streamlit =====
         st.subheader("Chọn mô hình dự đoán")
         model_choice = st.selectbox("Mô hình", results_df["Model"].tolist())
 
@@ -88,6 +78,7 @@ if uploaded_file is not None:
         # Hiển thị bảng đánh giá mô hình
         st.subheader("📊 Hiệu quả các mô hình trên train/test")
         st.dataframe(results_df)
+
     else:
         st.error(f"⚠️ File Excel phải có các cột: {features + [target]}")
 else:
