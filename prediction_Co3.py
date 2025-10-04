@@ -11,20 +11,27 @@ from sklearn.metrics import r2_score, mean_squared_error
 import streamlit as st
 import pandas as pd
 
-# Upload file
-uploaded_file = st.file_uploader("Chọn file Excel", type=["xlsx"])
+st.title("Ứng dụng dự đoán CO3")
+
+# Bước 1: Upload file
+uploaded_file = st.file_uploader("📂 Chọn file Excel", type=["xlsx"])
 
 if uploaded_file is not None:
-    # Đọc file
+    # Bước 2: Đọc dữ liệu
     df = pd.read_excel(uploaded_file)
-    st.write("📂 Dữ liệu đã upload:", df.head())
+    st.write("Dữ liệu đã tải lên:")
+    st.write(df.head())
 
-    # Giả sử bạn có features để xử lý
-    features = ["col1", "col2", "col3"]  # thay bằng cột thực tế trong file
-    X = df[features].values
-    st.write("✅ Ma trận X:", X[:5])
+    # Bước 3: Xác định features (thay tên cột thật trong file bạn)
+    features = ["Protein", "Salt", "Cacium"]   # <--- bạn phải đổi chỗ này
+    if all(f in df.columns for f in features):
+        X = df[features].values
+        st.write("✅ Ma trận X (5 dòng đầu):")
+        st.write(X[:5])
+    else:
+        st.error("⚠️ File Excel không có đủ các cột: " + str(features))
 
-    # Ở đây bạn thêm code train/predict
+    # Bước 4: thêm code train/predict tại đây
     # model.fit(X, y) ...
 else:
     st.warning("👉 Vui lòng upload file Excel để tiếp tục")
