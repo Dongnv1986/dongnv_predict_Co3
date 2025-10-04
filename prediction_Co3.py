@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error
 
 # ===========================
-df=pd.read_excel('Data.xlsx')
+df=pd.read_excel("C:/Mynotebook/6. Machine learning/predict co32-/Data.xlsx")
 
 # 1. Chuẩn bị dữ liệu và mô hình
 # ===========================
